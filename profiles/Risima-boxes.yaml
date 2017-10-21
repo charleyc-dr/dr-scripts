@@ -1,10 +1,9 @@
 ---
 hunting_info:
-- :zone: revenant_conscripts
+- :zone: wood_trolls1
   :duration: 30
   args:
   - d0
-  - boxes
 
 buff_spells:
   Centering:
@@ -34,41 +33,23 @@ buff_spells:
     - 10
   Protection from Evil:
     abbrev: PFE
-    recast: 1
+    recast: 2
     mana: 5
     cambrinth:
     - 10
-
-prehunt_buffs: 1389
-waggle_sets:
-  prehunt_buffs:
-    Centering:
-      mana: 4
-      cambrinth:
-      - 10
-      - 10
-    Minor Physical Protection:
-      mana: 9
-      cambrinth:
-      - 10
-    Major Physical Protection:
-      mana: 8
-      cambrinth:
-      - 10
-    Bless:
-      mana: 4
-      cambrinth:
-      - 10
-    Protection from Evil:
-      mana: 5
-      cambrinth:
-      - 10
 
 offensive_spells:
 - skill: Targeted Magic
   name: Fists of Faenella
   abbrev: FF
   mana: 5
+  cast_only_to_train: true
+# Note: only OK during day; grendels are cursed
+- skill: Debilitation
+  name: Soul Sickness
+  abbrev: sick
+  mana: 3
+  harmless: true
   cast_only_to_train: true
   
 dance_skill: Small Edged
@@ -79,7 +60,7 @@ training_abilities:
 weapon_training:
   Brawling: ''
   Small Edged: scimitar
-#  Crossbow: light crossbow
+  Crossbow: light crossbow
   Staves: deobar cane
   Offhand Weapon: triple-weighted bola
 offhand_thrown: true

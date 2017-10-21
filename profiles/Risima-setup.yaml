@@ -1,16 +1,6 @@
 ---
-# https://elanthipedia.play.net/Cleric#Circle_Requirements
-# 3 Magics: Arcana, Augmentation, Attunement
-# 3 Weapons (only 1 is needed to circle): Brawling, Heavy Thrown, Large Blunt
-# 1 Armor: Chain Armor (does not include Shield Usage)
-# 4 Survivals: Athletics, Perception, Evasion, Outdoorsmanship
-# 4 Lores (only 3 are needed to circle): Appraisal, Tactics, Scholarship, Mechanical Lore
-
-# Eventually you will need to train 1 more Lore to circle (for a total of 4)
-
 # Hunting settings
-# These control training-manager.lic
-training_manager_hunting_priority: true
+training_manager_hunting_priority: false
 training_manager_priority_skills:
 - Shield Usage
 - Parry Ability
@@ -24,7 +14,7 @@ health_threshold: 65
 
 hunting_info:
 - :zone: beisswurms
-  :duration: 60
+  :duration: 45
   stop_on:
   - Crossbow
   - Small Edged
@@ -34,7 +24,7 @@ hunting_info:
 
 # Gear settings
 gear:
-# ARMORinfo
+# ARMOR
 - :adjective: chain
   :name: balaclava
   :is_leather: false
@@ -136,14 +126,8 @@ buff_spells:
     mana: 8
     cambrinth:
     - 10
-  Protection from Evil:
-    abbrev: PFE
-    recast: 1
-    mana: 5
-    cambrinth:
-    - 10
 
-prehunt_buffs: 1389
+prehunt_buffs: 992
 waggle_sets:
   prehunt_buffs:
     Centering:
