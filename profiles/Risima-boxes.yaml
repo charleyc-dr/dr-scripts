@@ -1,0 +1,100 @@
+---
+hunting_info:
+- :zone: revenant_conscripts
+  :duration: 30
+  args:
+  - d0
+  - boxes
+
+buff_spells:
+  Centering:
+    abbrev: Centering
+    recast: 2
+    mana: 4
+    cambrinth:
+    - 10
+    - 10
+  Bless:
+    abbrev: bless
+    recast: 2
+    mana: 4
+    cambrinth:
+    - 10
+  Minor Physical Protection:
+    abbrev: MPP
+    recast: 2
+    mana: 9
+    cambrinth:
+    - 10
+  Major Physical Protection:
+    abbrev: MAPP
+    recast: 2
+    mana: 8
+    cambrinth:
+    - 10
+  Protection from Evil:
+    abbrev: PFE
+    recast: 1
+    mana: 5
+    cambrinth:
+    - 10
+
+prehunt_buffs: 1389
+waggle_sets:
+  prehunt_buffs:
+    Centering:
+      mana: 4
+      cambrinth:
+      - 10
+      - 10
+    Minor Physical Protection:
+      mana: 9
+      cambrinth:
+      - 10
+    Major Physical Protection:
+      mana: 8
+      cambrinth:
+      - 10
+    Bless:
+      mana: 4
+      cambrinth:
+      - 10
+    Protection from Evil:
+      mana: 5
+      cambrinth:
+      - 10
+
+offensive_spells:
+- skill: Targeted Magic
+  name: Fists of Faenella
+  abbrev: FF
+  mana: 5
+  cast_only_to_train: true
+  
+dance_skill: Small Edged
+dance_threshold: 0
+training_abilities:
+  Perc: 120
+  Pray: 610
+weapon_training:
+  Brawling: ''
+  Small Edged: scimitar
+#  Crossbow: light crossbow
+  Staves: deobar cane
+  Offhand Weapon: triple-weighted bola
+offhand_thrown: true
+stances:
+  Crossbow:
+  - Evasion
+  - Shield Usage
+  - Parry Ability  
+  Staves:
+  - Evasion
+  - Shield Usage
+  - Parry Ability
+skinning:
+  skin: true
+  arrange_all: false
+  arrange_count: 5
+  tie_bundle: true
+use_weak_attacks: false
