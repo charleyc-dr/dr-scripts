@@ -1,6 +1,10 @@
 ---
+safe_room: 1389
+lockpick_room_id: 1389
+prehunt_buffs: 1389
+
 # Hunting settings
-training_manager_hunting_priority: false
+training_manager_hunting_priority: true
 training_manager_priority_skills:
 - Shield Usage
 - Parry Ability
@@ -9,11 +13,11 @@ training_manager_priority_skills:
 - Brigandine
 hunting_file_list:
 - setup
-- boxes
+#- boxes
 health_threshold: 65
 
 hunting_info:
-- :zone: beisswurms
+- :zone: reavers
   :duration: 45
   stop_on:
   - Crossbow
@@ -127,7 +131,6 @@ buff_spells:
     cambrinth:
     - 10
 
-prehunt_buffs: 992
 waggle_sets:
   prehunt_buffs:
     Centering:
@@ -204,10 +207,10 @@ crossing_training:
 - Arcana
 - Theurgy
 - Locksmithing
-- Athletics
-- Scholarship
+# - Athletics
+# - Scholarship
 - Outdoorsmanship
-- Mechanical Lore
+# - Mechanical Lore
 training_spells:
   Augmentation:
     abbrev: Centering
@@ -215,7 +218,6 @@ training_spells:
     abbrev: mpp
   Utility:
     abbrev: bless
-safe_room: 1389
 cambrinth: cambrinth armband
 cambrinth_cap: 32
 favor_goal: 13
@@ -225,9 +227,13 @@ flint_lighter: scimitar
 theurgy_supply_container: backpack
 braid_item: grass
 
-lockpick_room_id: 1389
-picking_box_source: backpack
-picking_box_storage: backpack
+picking_box_source: haversack
+picking_pet_box_source: backpack
+picking_box_storage: haversack
 stop_pick_on_mindlock: false
 harvest_traps: true
 use_lockpick_ring: false
+
+train_workorders:
+- Tailoring
+crafting_container: backpack
