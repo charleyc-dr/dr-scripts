@@ -1,0 +1,303 @@
+custom_require.call(%w[common drinfomon common-travel common-items])
+
+class Coordinator
+  include DRC
+  include DRCT
+
+  def initialize(debug)
+    UserVars.coordinator_timers ||= {}
+    
+    @debug = debug
+    @settings = get_settings
+    @hunting_tasks = @settings.coordinator_hunting_tasks
+    @hunting_tasks.each { |task| task[:type] = :hunting }
+    @town_tasks = @settings.coordinator_town_tasks
+    @town_tasks.each { |task| task[:type] = :town }
+
+    prepare_tasks(@town_tasks + @hunting_tasks)
+
+    echo("Hunt counters: #{@hunt_counters}") if @debug
+    echo("First-run counters: #{@first_run_counters}") if @debug
+    
+    loop do
+      break unless run_next_task
+    end
+  end
+
+  def run_next_task
+    return unless task = get_next_task
+    echo("Found task to execute: #{task}") if @debug
+    (task[:type] == :town) ? run_town_task(task) : run_hunting_task(task)
+    update_predicates_for_completed_task(task)
+    true
+  end
+
+  def get_next_task
+    priority_town_task || hunting_task || town_task || default_hunting_task
+  end
+  
+  def priority_town_task
+    candidates = @town_tasks.select { |task| task[:priority_over_hunting] }
+    candidates.find { |task| predicate_met?(task) }
+  end
+
+  def hunting_task
+    @hunting_tasks.find { |task| predicate_met?(task) }
+  end
+
+  def town_task
+    candidates = @town_tasks.select { |task| !task[:priority_over_hunting] }
+    candidates.find { |task| predicate_met?(task) }
+  end
+
+  def default_hunting_task
+    @hunting_tasks.find { |task| task[:default] }
+  end
+
+  def predicate_met?(task)
+    echo("Checking predicates for task: #{task}") if @debug
+    start = evaluate_predicate?(task[:start_on])
+    if start && !(task[:stop_on].nil? || task[:stop_on].empty?)
+      start = !evaluate_predicate?(task[:stop_on])
+    end
+    start
+  end
+
+  def evaluate_predicate?(predicate)
+    return true if predicate.nil? || predicate.empty?
+    unless predicate.size == 1
+      raise ArgumentError, "Predicate with multiple keys: #{predicate}"
+    end
+
+    key = predicate.keys.first
+    value = predicate[key]
+    
+    case key
+    when 'or'
+      value.any? { |member| evaluate_predicate?(member) }
+    when 'and'
+      value.all? { |member| evaluate_predicate?(member) }
+    when 'skill_less_than'
+      echo("Checking skill #{value['skill']} < #{value['target']}") if @debug
+      skill_less_than?(value['skill'], value['target'])
+    when 'any_skill_less_than'
+      echo("Checking skills #{value['skills']} < #{value['target']}") if @debug
+      value['skills'].any? { |skill| skill_less_than?(skill, value['target']) }
+    when 'after_every_hunt'
+      echo("Checking hunt counter #{value['key']}: #{@hunt_counters[value['key']]}") if @debug
+      @hunt_counters[value['key']] > 0
+    when 'on_first_run'
+      echo("Checking first-run counter #{value['key']}: #{@first_run_counters[value['key']]}") if @debug
+      @first_run_counters[value['key']]
+    when 'boxes_over'
+      get_num_boxes > value
+    when 'boxes_under'
+      get_num_boxes < value
+    when 'encumbrance_over'
+      check_encumbrance > value
+    when 'timer'
+      if value['global']
+        return true unless timer = UserVars.coordinator_timers[value['key']] 
+      else
+        return true unless timer = @local_timers[timer['key']]
+      end
+      Time.now > timer
+    when 'predicate'
+      unless all_predicates.include? value
+        raise ArgumentError, "Predicate not in whitelist: #{value}"
+      end
+      send(value)
+    else
+      raise ArgumentError, "Unknown predicate type: #{key}"
+    end
+  end
+
+  def prepare_tasks(tasks)
+    @hunt_counters = {}
+    @first_run_counters = {}
+    @local_timers = {}
+    tasks.each do |task|
+      task[:hunt_counters] = []
+      task[:first_run_counters] = []
+      get_hunt_counters(task).each do |key|
+        @hunt_counters[key] = 0
+        task[:hunt_counters] << key
+      end
+      get_first_run_counters(task).each do |key|
+        @first_run_counters[key] = true
+        task[:first_run_counters] << key
+      end
+    end
+  end
+
+  def task_predicates(task)
+    predicates = []
+    (predicates << task[:start_on]) if task[:start_on]
+    (predicates << task[:stop_on]) if task[:stop_on]
+    predicates
+  end
+  
+  def get_hunt_counters(task)
+    task_predicates(task).map do |predicate|
+      terminal_predicates(predicate).
+        select { |pred| pred.keys.first == 'after_every_hunt' }.
+        map { |pred| pred.values.first['key']}
+    end.flatten
+  end
+
+  def get_first_run_counters(task)
+    task_predicates(task).map do |predicate|
+      terminal_predicates(predicate).
+        select { |pred| pred.keys.first == 'on_first_run' }.
+        map { |pred| pred.values.first['key']}
+    end.flatten
+  end
+
+  def get_timers(task)
+    task_predicates(task).select { |pred| pred.keys.first == 'timer' }
+      .map { |pred| pred['timer'] }
+  end
+
+  def update_predicates_for_completed_task(task)
+    task[:hunt_counters].each do |key|
+      @hunt_counters[key] = 0
+    end
+    task[:first_run_counters].each do |key|
+      @first_run_counters[key] = false
+    end
+    get_timers(task).each do |timer|
+      echo("Resetting timer: #{timer}") if @debug
+      reset_time = Time.now + timer['time']
+      if timer['global']
+        UserVars.coordinator_timers[timer['key']] = reset_time
+      else
+        @local_timers[timer['key']] = reset_time
+      end
+    end
+  end
+  
+  def terminal_predicates(predicate)
+    return [] if predicate.nil? || predicate.empty?
+    unless predicate.size == 1
+      raise ArgumentError, "Predicate with multiple keys: #{predicate}"
+    end
+
+    key = predicate.keys.first
+    value = predicate[key]
+    case key
+    when 'or', 'and'
+      value.map { |member| terminal_predicates(member) }.flatten
+    else
+      [predicate]
+    end    
+  end
+
+  def skill_less_than?(skill, target)
+    echo("Skill level is #{DRSkill.getxp(skill)}") if @debug
+    DRSkill.getxp(skill) < target
+  end
+
+  def get_num_boxes
+    (get_boxes(@settings.picking_box_source) || []).size    
+  end
+
+  def run_town_task(task)
+    echo("Running town task #{task}") if @debug
+    action = task[:action]
+    unless all_actions.include? action
+      raise ArgumentError, "Action not in whitelist: #{action}"
+    end
+    send(action)
+  end
+  
+  def run_hunting_task(task)
+    file = task[:file]
+    echo("Starting hunting-buddy with file #{file}") if @debug
+    start_script('hunting-buddy', [file])
+    pause 5
+    while Script.running?('hunting-buddy')
+      $HUNTING_BUDDY.stop_hunting if (task[:stop_on] && evaluate_predicate?(task[:stop_on]))
+      pause 5
+    end
+    @hunt_counters.each_key do |key|
+      @hunt_counters[key] += 1
+    end
+    safe_room = @settings.safe_room
+    if task[:safe_room]
+      safe_room = task[:safe_room]['id']
+    end
+    walk_to(safe_room)
+    # TODO: repair timer?
+  end
+  
+  #
+  # Predicates
+  #  
+
+  def all_predicates
+    [
+      'run_crossing_training?',
+    ]
+  end
+  
+  def run_crossing_training?
+    @settings.crossing_training.any? { |skill| DRSkill.getxp(skill) < 28 }
+  end
+  
+  #
+  # Actions
+  #
+  def all_actions
+    [
+      'heal',
+      'sell_loot',
+      'repair_equipment',
+      'pick_one_box',
+      'pick_boxes',
+      'practice_theurgy',
+      'crossing_training',
+    ]
+  end
+  
+  def heal
+    wait_for_script_to_complete('safe-room')
+  end
+
+  def sell_loot
+    wait_for_script_to_complete('sell-loot')
+  end
+
+  def repair_equipment
+    wait_for_script_to_complete('crossing-repair')
+  end
+
+  def pick_one_box
+    # Obviously this isn't what we want...
+    pick_boxes
+  end
+  
+  def pick_boxes
+    walk_to(@settings.lockpick_room_id) if @settings.lockpick_room_id
+    wait_for_script_to_complete('pick')
+  end
+
+  def practice_theurgy
+    wait_for_script_to_complete('better-theurgy')
+  end
+
+  def crossing_training
+    start_script('crossing-training')
+    pause 5
+    pause 1 while get_next_task[:action] == 'crossing_training'
+    $CROSSING_TRAINER.stop
+    pause 1 while $CROSSING_TRAINER.running
+  end
+end
+
+before_dying do
+  ['hunting-buddy', 'crossing-training'].each do |script_name|
+    stop_script(script_name) if Script.running?(script_name)
+  end
+end
+
+Coordinator.new(true)
