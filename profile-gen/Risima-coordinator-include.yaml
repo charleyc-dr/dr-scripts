@@ -11,64 +11,51 @@ coordinator_hunting_tasks:
             target: 10
         - skill_less_than:
             skill: Small Edged
-            target: 5
-    :stop_on:
-      encumbrance_over: 1
+            target: 6
     :safe_room:
       id: 4116
-  - :file: tresses
-    :start_on:
-      boxes_under: 2
-    :stop_on:
-      or:
-        - encumbrance_over: 1
-        - boxes_over: 7
-    :safe_room:
-      id: 4199
   - :file: back
     :start_on:
-      any_skill_less_than:
-        skills:
-          - Heavy Thrown
-          - Sorcery
-        target: 10
+      or:
+        - any_skill_less_than:
+            skills:
+              - Heavy Thrown
+              - Sorcery
+            target: 10
+        - and:
+          - boxes_under: 2
+          - skill_less_than:
+              skill: Lockpicking
+              target: 5
     :safe_room:
       id: 4116
-
+      
 # TODO: check favors
+coordinator_hunting_cleanup:
+  - :script: safe-room
+  - :script: sell_loot
+    :skip_first_run: true
+  - :script: crossing-repair
+    :skip_first_run: true
+    :start_on:
+      timer:
+        time: 3_600 
+        key: 'repair'
           
 coordinator_town_tasks:
-  - :action: heal
-    :priority_over_hunting: true
-    :start_on:
-      or:
-        - on_first_run:
-            key: 'heal'
-        - after_every_hunt:
-            key: 'heal'
-  - :action: sell_loot
-    :priority_over_hunting: true
+  - :action: pick_boxes
     :start_on:
       and:
-        - encumbrance_over: 1
+        - boxes_over: 0
         - or:
-          - on_first_run:
-              key: 'sell-loot-1'
-          - after_every_hunt:
-              key: 'sell-loot-1'
-  - :action: pick_boxes
-    :priority_over_hunting: true
-    :start_on:
-      or:
-        - boxes_over: 5
-        - encumbrance_over: 1
-        - and:
-            - boxes_over: 0
+            - predicate: hunt_done?
+            - boxes_over: 5
+            - encumbrance_over: 1
             - skill_less_than:
                 skill: Lockpicking
-                target: 17
-  - :action: practice_theurgy
-    :priority_over_hunting: true
+                # TODO: painful that picking is all-or-nothing.
+                target: 10
+  - :script: better-theurgy
     :start_on:
       and:
         - timer:
@@ -78,19 +65,14 @@ coordinator_town_tasks:
         - skill_less_than:
             skill: Theurgy
             target: 15
-  - :action: pick_boxes
+  - :script: first-aid
     :start_on:
-      after_every_hunt:
-        key: 'pick-boxes'
-  - :action: sell_loot
-    :start_on:
-      after_every_hunt:
-        key: 'sell-loot-2'
-  - :action: repair_equipment
-    :start_on:
-      after_every_hunt:
-        key: 'repair-equipment'
+      skill_less_than:
+        skill: First Aid
+        target: 5
   - :action: crossing_training
     :start_on:
-      predicate: run_crossing_training?
+      and:
+        - predicate: hunt_done?
+        - predicate: run_crossing_training?
 
