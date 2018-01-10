@@ -1,8 +1,8 @@
 ---
 hunting_info:
 - :zone: 
-  - eidolon_steeds
-  - eidolon_steeds
+  - thicket_vipers
+  - thicket_vipers
   args:
   - d0
   - back
@@ -10,10 +10,12 @@ hunting_info:
   before:
   - buff eotb
   after:
+  - athletics
+  - go2  
   - rem eotb
-  - deposit shard
-  - go2 
-  - buff eotb
+  #- deposit riverhaven
+  #- go2 
+  #- buff eotb
 
 offensive_spells:
 - skill: Sorcery
@@ -21,15 +23,15 @@ offensive_spells:
   abbrev: lethargy
   cast_only_to_train: true
   harmless: true
-  mana: 7
+  mana: 8
 buff_spells:
-  Obfuscation:
-    abbrev: obf
-    recast: 2
-    mana: 5
-    cambrinth:
-    - 20
-    - 15
+  # Obfuscation:
+  #   abbrev: obf
+  #   recast: 2
+  #   mana: 5
+  #   cambrinth:
+  #   - 20
+  #   - 15
 
 use_weak_attacks: true
 use_stealth_attacks: false
@@ -45,9 +47,6 @@ weapon_training:
   Staves: nightstick
   Twohanded Blunt: bar mace
   Twohanded Edged: bastard sword
-  Bow: nisha shortbow
-  Crossbow: forester stonebow
-  Slings: shadow sling
 offhand_thrown: true
 dance_skill: Brawling
 
@@ -60,5 +59,22 @@ thanatology:
 skinning:
   skin: true
   arrange_all: false
-  arrange_count: 2
+  arrange_count: 4
   tie_bundle: true
+
+loot_subtractions:
+- box
+- trunk
+- coffer
+- strongbox
+- chest
+- caddy
+- casket
+- skippet
+- crate
+- rock
+- rocks
+- arrow
+- arrows
+- bolt
+- bolts

@@ -21,6 +21,8 @@ hunting_info:
   :duration: 30
   before:
   - release_cyclic
+  - go2 705
+  - first-aid
   # args:
   # - r4
   stop_on:
@@ -61,14 +63,14 @@ hunting_buddies:
 - Remu
 - Wanz
 - Serature
-- Tebaud
 - Elegoth
 - Sheltim
-- Atere
-- Oratesen
 - Lhind
 - Phoerne
 - Tamfell
+- Doruktin
+- Khalei
+- Raddalaf
 
 # Gear settings
 gear:
@@ -194,7 +196,8 @@ buff_spells:
     mana: 30
   # Nexus:
   #   mana: 30
-dance_skill: Large Edged
+# dance_skill: Large Edged
+dynamic_dance_skill: true
 training_abilities:
   Tactics: 30
   Hunt: 80
@@ -244,7 +247,7 @@ crossing_training:
 - Attunement
 # - Scholarship
 # - Appraisal
-# - First Aid
+- First Aid
 - Performance
 - Athletics
 - Perception
@@ -310,6 +313,7 @@ crossing_training_sorcery:
   - 15
   - 15
   - 10
+use_harness_when_arcana_locked: true
 
 quit_on_status_warning: true
 braid_item: grass
